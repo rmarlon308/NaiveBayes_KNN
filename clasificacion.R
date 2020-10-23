@@ -46,11 +46,11 @@ model = naive_bayes(OVERALL_DIAGNOSIS ~ ., data = train_data_n)
 
 pred_data = predict(model, newdata = test_data_n[-1])
 
-actual_data = test_data_n$OVERALL_DIAGNOSIS
+actual_pred = test_data_n$OVERALL_DIAGNOSIS
 
-table(pred_data, actual_data)
+table(pred_data, actual_pred)
 
-mean(pred_data == actual_data)
+(naive_bayes_performance = mean(pred_data == actual_pred))
 
 
 #Knn con distancia euclidiana
@@ -103,7 +103,6 @@ my_knn = function(y, train_data, test_data, dist, k){
     return(predictions)
 }
 
-actual_pred = test_data_n$OVERALL_DIAGNOSIS
 
 my_pred_euclidean = my_knn("OVERALL_DIAGNOSIS", train_data_n, test_data_n[-1],"euclidean", k = 5)
 my_pred_manhattan = my_knn("OVERALL_DIAGNOSIS", train_data_n, test_data_n[-1],"manhattan", k = 5)
@@ -136,19 +135,26 @@ performance_ecludian = performance_ks(1,30, "OVERALL_DIAGNOSIS", "euclidean", ac
 
 performance_manhattan = performance_ks(1,30, "OVERALL_DIAGNOSIS", "manhattan", actual_pred)
 
+performance_ecludian$distance = "Euclidean"
+performance_manhattan$distance = "Manhattan"
+
+general_performace = rbind(performance_ecludian, performance_manhattan)
+
 ks = seq(1, 30, 2)
 
-ggplot(performance_ecludian, aes(y = accuracy , x = k_number)) +
-    geom_line(color = "blue")+
+ggplot(general_performace, aes(y = accuracy , x = k_number, color = distance)) +
+    geom_line()+
     scale_x_continuous("K", labels = as.character(ks), breaks = ks) +
-    labs(title = "Rendimiento con Knn(Euclidean)")
+    labs(title = "Rendimiento con Knn(Euclidean vs Manhattan)")
     theme_bw()
+    
+sprintf("Naive Bayes Performance: %s", naive_bayes_performance)
+    
+sprintf("Knn performance (Euclidean): k = %s, %s", performance_ecludian[1,1], performance_ecludian[1,2])
 
-ggplot(performance_manhattan, aes(y = accuracy , x = k_number)) +
-    geom_line(color = "blue")+
-    scale_x_continuous("K", labels = as.character(ks), breaks = ks) +
-    labs(title = "Rendimiento con Knn(Manhattan)")
-    theme_bw()
+sprintf("Knn performance (Manhattan): k = %s, %s", performance_manhattan[1,1], performance_manhattan[1,2])
+
+
     
 
 
